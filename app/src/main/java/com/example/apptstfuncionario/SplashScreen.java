@@ -11,6 +11,10 @@ import android.os.Handler;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +22,10 @@ import java.util.List;
 public class SplashScreen extends AppCompatActivity {
 
     private SharedPreferences sharedPreferences;
+    private Funcionario funcionario = new Funcionario();
+
+    private FirebaseDatabase firebaseDatabase;
+    private DatabaseReference databaseReference;
 
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -26,12 +34,15 @@ public class SplashScreen extends AppCompatActivity {
         sharedPreferences = getSharedPreferences("LOGIN", Context.MODE_PRIVATE);
         final String resultado = sharedPreferences.getString("LOGIN", "");
 
+        conectaBanco();
+
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!Boolean.parseBoolean(resultado)){
                     criarLogin();
+                    ranking();
                 }
             }
         }, 2000);
@@ -62,8 +73,43 @@ public class SplashScreen extends AppCompatActivity {
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
             if (resultCode == RESULT_OK){
-                //this
+
+                if (response.isNewUser()){
+
+                    this.funcionario.setUid(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                    this.funcionario.setEmail(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+                    this.funcionario.setValido(false);
+                    databaseReference
+                            .child("projetotst")
+                            .child("funcionario")
+                            .child(funcionario.getUid())
+                            .setValue(funcionario);
+                }
+
+                sharedPreferences = getSharedPreferences("LOGIN", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("LOGIN", "true");
+                editor.apply();
+            }
+            else {
+                if (response == null){
+                    finish();
+                }
             }
         }
+    }
+
+    public void ranking(){
+        Intent intent = new Intent(
+                SplashScreen.this, MainActivity.class
+        );
+        startActivity(intent);
+
+    }
+
+    public void conectaBanco(){
+        FirebaseApp.initializeApp(SplashScreen.this);
+        firebaseDatabase = firebaseDatabase.getInstance();
+        databaseReference = firebaseDatabase.getReference();
     }
 }
