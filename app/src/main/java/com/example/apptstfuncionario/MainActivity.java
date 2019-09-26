@@ -33,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        sharedPreferences = getSharedPreferences("LOGIN", Context.MODE_PRIVATE);
+        final String resultado = sharedPreferences.getString("LOGIN", "");
     }
 
     @Override
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
                             .build(),
                     123
             );
+            //finish();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -98,14 +102,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        sharedPreferences = getSharedPreferences("LOGIN", Context.MODE_PRIVATE);
-
-        String resultado = sharedPreferences.getString("LOGIN", "");
-        if (!Boolean.parseBoolean(resultado)){ finish(); }
     }
 }
 
